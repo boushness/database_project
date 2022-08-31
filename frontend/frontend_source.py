@@ -1243,12 +1243,24 @@ class OrderListWindow(QtWidgets.QMainWindow):
 
             self.warningBox = Warning(self, "Are you sure?", "You are about to delete Order {}. Do you want to proceed?".format(selectedOrder))
 
+            # Grabs JobNumber that the selected OrderNumber is connected to
             query = mydb.cursor()
-            query.execute("DELETE FROM JOBORDER WHERE OrderNumber={}".format(selectedOrder))
+            query.execute("SELECT JobNumber FROM JOBORDER WHERE OrderNumber={}".format(selectedOrder))
+            jobNumber = query.fetchone()[0]
+            
+            # Deletes all entries associated with the JobNumber/OrderNumber
+            query.execute("DELETE FROM JOB WHERE JobNumber={}".format(jobNumber))
+            query.execute("DELETE FROM JOBORDER WHERE JobNumber={}".format(jobNumber))
+            query.execute("DELETE FROM ORDERHARDWARE WHERE JobNumber={}".format(jobNumber))
+            query.execute("DELETE FROM DOOR WHERE JobNumber={}".format(jobNumber))
 
+            # Commit changes to database, close cursor, and update table and dropdowns
             mydb.commit()
             query.close()
 
+            self.updateContact()
+            self.updateCustomer()
+            self.updateOrderNumber()
             self.updateTable()
 
             #self.report = ViewOrder(self, selectedOrder) # Creates child window for the report
@@ -1271,8 +1283,8 @@ class OrderListWindow(QtWidgets.QMainWindow):
         if len(self.ContactID) > 1: 
             contactID = self.ContactID[self.Contact.currentIndex() - 1]
         if len(self.OrderNumber) > 1: 
-            orderNumber = self.OrderNumber.currentIndex()
-        #print([customerID, contactID, orderNumber])
+            orderNumber = self.OrderNumber.currentText()
+        print([customerID, contactID, orderNumber])
 
         # Formats values to a boolean check for a query, or to a check that grabs everything.
         # Index 0 is '*', which is designed to grab all non-null values.
@@ -1287,7 +1299,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
         else:
             contactIDQuery = 'CUSTOMERCONTACTS.ContactID = {}'.format(contactID)
         
-        if orderNumber == 0:
+        if self.OrderNumber.currentIndex() == 0:
             orderNumberQuery = 'OrderNumber IS NOT NULL'
         else:
             orderNumberQuery = 'OrderNumber = {}'.format(orderNumber)
