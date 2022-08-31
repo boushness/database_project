@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import (
     QMessageBox,
     QTableWidgetItem,
 )
-
 import mysql.connector
 
 # Order Report window Class for viewing Order information from the database.
@@ -57,60 +56,54 @@ class ViewOrder(QtWidgets.QMainWindow):
         self.CustomerName = QtWidgets.QLineEdit(query.fetchone()[0])
         self.CustomerName.setReadOnly(True)
         #############
-        query = mydb.cursor()
+        
         query.execute("SELECT DISTINCT CONCAT(FirstName, ' ', LastName) FROM CONTACT"
                         + " INNER JOIN JOB ON JOB.MainContact = CONTACT.ContactID"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
                         + " WHERE OrderNumber = {}".format(orderNumber))
-        #query.next()
 
         self.Contact = QtWidgets.QLineEdit(query.fetchone()[0])
         self.Contact.setReadOnly(True)
         #############
-        query = mydb.cursor()
+        
         query.execute("SELECT JobName FROM JOB"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
                         + " WHERE OrderNumber = {}".format(orderNumber))
-        #query.next()
 
         self.JobName = QtWidgets.QLineEdit(query.fetchone()[0])
         self.JobName.setReadOnly(True)
         #############
-        query = mydb.cursor()
+         
         query.execute("SELECT PONumber FROM JOB"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
                         + " WHERE OrderNumber = {}".format(orderNumber))
-        #query.next()
 
         self.PO = QtWidgets.QLineEdit(query.fetchone()[0])
         self.PO.setReadOnly(True)
         #############
-        query = mydb.cursor()
+         
         query.execute("SELECT JobDate FROM JOB"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
                         + " WHERE OrderNumber = {}".format(orderNumber))
-        #query.next()
 
         # Formatting for date type variable
         self.JobDate = QtWidgets.QLineEdit(query.fetchone()[0].strftime("%m/%d/%Y"))
         '''.toString("MM/dd/yy")'''
         self.JobDate.setReadOnly(True)
         #############
-        query = mydb.cursor()
+         
         query.execute("SELECT EstimatedDueDate FROM JOB"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
                         + " WHERE OrderNumber = {}".format(orderNumber))
-        #query.next()
 
         # Formatting for date type variable
         self.EstimatedDueDate = QtWidgets.QLineEdit(query.fetchone()[0].strftime("%m/%d/%Y"))
         self.EstimatedDueDate.setReadOnly(True)
         #############
-        query = mydb.cursor()
+         
         query.execute("SELECT AppliedFinish FROM JOB"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
                         + " WHERE OrderNumber = {}".format(orderNumber))
-        #query.next()
 
         self.Finish = QtWidgets.QLineEdit(query.fetchone()[0]) 
         # If there is no selected Finish value, 'None' is inserted
@@ -118,7 +111,7 @@ class ViewOrder(QtWidgets.QMainWindow):
             self.Finish.insert('None')
         self.Finish.setReadOnly(True)
         #############
-        query = mydb.cursor()
+         
         query.execute("SELECT CONCAT(Quantity, 'x ', HardwareName) FROM ORDERHARDWARE"
                         + " INNER JOIN JOBORDER ON ORDERHARDWARE.JobNumber = JOBORDER.JobNumber"
                         + " WHERE OrderNumber = {}".format(orderNumber))
@@ -126,7 +119,7 @@ class ViewOrder(QtWidgets.QMainWindow):
         self.Hardware = QtWidgets.QLineEdit('None')
         # If there is no selected Hardware value, 'None' is inserted
         hardwareText = query.fetchone()
-        if query.rowcount != 0 and type(hardwareText) == NoneType:
+        if query.rowcount != 0 and type(hardwareText) == type(None):
             self.Hardware.insert(hardwareText[0])
         self.Hardware.setReadOnly(True)
         ############# 
@@ -171,7 +164,7 @@ class ViewOrder(QtWidgets.QMainWindow):
         # the passed value
         self.table = QtWidgets.QTableWidget()
 
-        query = mydb.cursor()
+         
         query.execute("SELECT DoorQuantity, DoorWidth, DoorHeight, MaterialName,"
                         + " Thickness, StyleCode, InsideProfile, PanelProfile, OutsideProfile, Bore, DoorComment"
                         + " FROM DOOR"
@@ -193,16 +186,8 @@ class ViewOrder(QtWidgets.QMainWindow):
 
         # Sets resizing behavior for all columns in the table
         header = self.table.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(4, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(5, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(7, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(8, QtWidgets.QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(9, QtWidgets.QHeaderView.ResizeToContents)
+        for i in range(10):
+            header.setSectionResizeMode(i, QtWidgets.QHeaderView.ResizeToContents)
         header.setSectionResizeMode(10, QtWidgets.QHeaderView.Stretch)
 
         ###############################################################################
@@ -213,7 +198,7 @@ class ViewOrder(QtWidgets.QMainWindow):
         # Subwidgets for self.shippingAndComments. They are read-only.
 
         # Query to grab DeliveryMethod from the Order
-        query = mydb.cursor()
+         
         query.execute("SELECT DeliveryMethod FROM JOBORDER"
                         + " WHERE OrderNumber = {}".format(orderNumber))
         self.deliveryMethod = QtWidgets.QLineEdit(query.fetchone()[0])
@@ -221,7 +206,7 @@ class ViewOrder(QtWidgets.QMainWindow):
         # If the Order has no specified DeliveryMethod, the DefaultDeliveryMethod is grabbed
         # from the Customer
         if self.deliveryMethod.text() == '':
-            query = mydb.cursor()
+             
             query.execute("SELECT DefaultDeliveryMethod FROM CUSTOMER"
                         + " INNER JOIN JOB ON JOB.CustomerID = CUSTOMER.CustomerID"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
@@ -230,14 +215,14 @@ class ViewOrder(QtWidgets.QMainWindow):
         self.deliveryMethod.setReadOnly(True)
         #############
         # Query to grab ShippingInstructions from the Order
-        query = mydb.cursor()
+         
         query.execute("SELECT ShippingInstructions FROM JOBORDER"
                         + " WHERE OrderNumber = {}".format(orderNumber))
         self.shippingInstructions = QtWidgets.QTextEdit(query.fetchone()[0])
         self.shippingInstructions.setReadOnly(True)
         #############
         # Query to grab ProductionComments from the Order
-        query = mydb.cursor()
+         
         query.execute("SELECT ProductionComments FROM JOBORDER"
                         + " WHERE OrderNumber = {};".format(orderNumber))
         self.productionComments = QtWidgets.QTextEdit(query.fetchone()[0])
@@ -299,7 +284,9 @@ class ViewOrder(QtWidgets.QMainWindow):
         # all information to be comfortably shown 
         self.setWindowTitle("Order Report")
         self.setMinimumSize(1200, 800)
-    
+
+        query.close()
+
     # Closed Order Report window and shows Order list window
     def exitOrder(self):
         self.close()
@@ -409,7 +396,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
         self.OrderNumber.setReadOnly(True)
         
         # Customer menu and CustomerID array is loaded with CustomerName and CustomerID from the database, respectively
-        query = mydb.cursor()
+         
         query.execute("SELECT CustomerName, CustomerID FROM CUSTOMER")
         for row in query:
             self.CustomerName.addItem("{}".format(row[0]))
@@ -424,7 +411,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
 
         # Finish dropdown menu is loaded with FinishName from the database
         # with a "None" option
-        query = mydb.cursor()
+         
         query.execute("SELECT FinishName FROM FINISH;")
         self.Finish.addItem("None")
         for row in query:
@@ -432,7 +419,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
 
         # Hardware dropdown menu is loaded with HardwareName from the database
         # with a "None" option
-        query = mydb.cursor()
+         
         query.execute("SELECT HardwareName FROM HARDWARE;")
         self.Hardware.addItem("None")
         for row in query:
@@ -537,7 +524,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
         # Query grabs all delivery methods that are not 'WILL CALL', and the appends the results
         # to the menu with 'WILL CALL' added first.
         # This is to allow WILL CALL to be the first and default selection in the menu
-        query = mydb.cursor()
+         
         query.execute("SELECT DeliveryMethodName FROM PRODUCTDELIVERYMETHOD WHERE DeliveryMethodName <> 'WILL CALL'")
         self.deliveryMethod.addItem('WILL CALL')
         for row in query:
@@ -649,6 +636,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
         queries.append("SELECT ProfileName FROM DOORPROFILE WHERE ProfileType = 'O'")
         queries.append("SELECT HingeBoringName FROM HINGEBORING")
 
+        query = mydb.cursor()
         # Cells that use and/or require pre-existing values from the database are loaded with a dropdown menu
         for j in range(3, 10):
             # A new dropdown menu object is made with self.table as the parent.
@@ -660,7 +648,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
             if j >= 6:
                 ch.addItem("None")
             # The dropdown menu is loaded with the values from the respective query.
-            query = mydb.cursor()
+            
             query.execute(queries[j-3])
             for row in query:
                 ch.addItem(row[0])
@@ -681,6 +669,8 @@ class NewOrderWindow(QtWidgets.QMainWindow):
         # Changes Material cell's current selection from 1 to 0 to manually trigger updateThicknessStyleCode
         self.table.cellWidget(latestRow, 3).setCurrentIndex(1)
         self.table.cellWidget(latestRow, 3).setCurrentIndex(0)
+
+        query.close()
 
     # Inserts and formats a new row to the bottom of self.table
     def insertNewRow(self):
@@ -705,13 +695,15 @@ class NewOrderWindow(QtWidgets.QMainWindow):
         #chNew.setEditable(True)
         
         # Query for getting Thickness values based on Material
-        thicknessQuery = mydb.cursor()
-        thicknessQuery.execute("SELECT DISTINCT Thickness FROM MATERIAL WHERE MaterialName = '{}'"
+        query = mydb.cursor()
+        query.execute("SELECT DISTINCT Thickness FROM MATERIAL WHERE MaterialName = '{}'"
             .format(self.table.cellWidget(row, 3).currentText()))
         
         # Adds query values to new Thickness menu object
-        for queryRow in thicknessQuery:
+        for queryRow in query:
             chNew.addItem(queryRow[0])
+        
+        query.close()
 
         # Sets signal connection for when the user interacts with the Thickness dropdown menu
         chNew.currentIndexChanged.connect(self.updateStyleCode)
@@ -726,13 +718,15 @@ class NewOrderWindow(QtWidgets.QMainWindow):
         #chNew.setEditable(True)
 
         # Query for getting StyleCode values based on Material and Thickness
-        stylecodeQuery = mydb.cursor()
-        stylecodeQuery.execute("SELECT DISTINCT StyleCode FROM STYLEPRICING WHERE MaterialName = '{}'"
+        query = mydb.cursor()
+        query.execute("SELECT DISTINCT StyleCode FROM STYLEPRICING WHERE MaterialName = '{}'"
             .format(self.table.cellWidget(row, 3).currentText()))
         
         # Adds query values to new StyleCode menu object
-        for queryRow in stylecodeQuery:
+        for queryRow in query:
             chNew.addItem(queryRow[0])
+        
+        query.close()
 
         # Replaces current StyleCode menu object with new object
         self.table.setCellWidget(row, 5, chNew)
@@ -747,13 +741,15 @@ class NewOrderWindow(QtWidgets.QMainWindow):
         #chNew.setEditable(True)
 
         # Query for getting StyleCode values based on Material and Thickness
-        stylecodeQuery = mydb.cursor()
-        stylecodeQuery.execute("SELECT StyleCode FROM STYLEPRICING WHERE MaterialName = '{}' AND Thickness = '{}'"
+        query = mydb.cursor()
+        query.execute("SELECT StyleCode FROM STYLEPRICING WHERE MaterialName = '{}' AND Thickness = '{}'"
             .format(self.table.cellWidget(row, 3).currentText(), self.table.cellWidget(row, 4).currentText()))
         
         # Adds query values to new StyleCode menu object
-        for queryRow in stylecodeQuery:
+        for queryRow in query:
             chNew.addItem(queryRow[0])
+        
+        query.close()
         
         # Replaces current StyleCode menu object with new object
         self.table.setCellWidget(row, 5, chNew)
@@ -826,8 +822,9 @@ class NewOrderWindow(QtWidgets.QMainWindow):
                                     )
             )
 
-            insertQuery = mydb.cursor()
-            insertQuery.execute(insertQueryStatement)
+            query = mydb.cursor()
+            query.execute(insertQueryStatement)
+            print(insertQueryStatement)
             
             # Query to grab the latest job that was created, which will be the job created with the last query
             jobQuery = mydb.cursor()
@@ -863,8 +860,9 @@ class NewOrderWindow(QtWidgets.QMainWindow):
                                     self.deliveryMethod.currentText()
                                 )
                              )
-            insertQuery = mydb.cursor()
-            insertQuery.execute(insertQueryStatement)
+             
+            query.execute(insertQueryStatement)
+            print(insertQueryStatement)
 
             # Summing variable to determine Hardware Quantity
             hardwareNum = 0
@@ -931,8 +929,9 @@ class NewOrderWindow(QtWidgets.QMainWindow):
 
                                     )
                                 )
-                    insertQuery = mydb.cursor()
-                    insertQuery.execute(insertQueryStatement)
+                     
+                    query.execute(insertQueryStatement)
+                    print(insertQueryStatement)
 
                     # Door Quantity is summed into hardwareNum
                     hardwareNum += int(self.table.cellWidget(i, 0).text())
@@ -940,8 +939,13 @@ class NewOrderWindow(QtWidgets.QMainWindow):
             # If Hardware was chosen, an INSERT is called with the selected Hardware and hardwareNum
             if self.Hardware.currentText() != 'None':
                 insertQueryStatement = ("INSERT INTO ORDERHARDWARE VALUES({}, '{}', {})".format(jobNumber, self.Hardware.currentText(), hardwareNum))
-                insertQuery = mydb.cursor()
-                insertQuery.execute(insertQueryStatement)
+                 
+                query.execute(insertQueryStatement)
+                print(insertQueryStatement)
+            
+            # Commit data to database
+            mydb.commit()
+            query.close()
         # Exits out of the Order Form
         self.exitOrder()
 
@@ -1153,6 +1157,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
                 + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
                 + " WHERE JOB.CustomerID = {}".format(customerID)
                 )
+
         # Contact menu and ContactID array are cleared
         self.Contact.clear()
         self.ContactID.clear()
@@ -1167,11 +1172,14 @@ class OrderListWindow(QtWidgets.QMainWindow):
         
         self.Contact.setCurrentIndex(0)
 
+        query.close()
+
     # Updates Customer dropdown menu with database data
     def updateCustomer(self):
         # Query for grabbing CustomerName from the database
         # Only grabs Customers who have an existing JOBORDER entry in the
         # database.
+        
         query = mydb.cursor()
         query.execute("SELECT DISTINCT CustomerName, CUSTOMER.CustomerID FROM CUSTOMER"
                         + " INNER JOIN CUSTOMERCONTACTS ON CUSTOMER.CustomerID = CUSTOMERCONTACTS.CustomerID"
@@ -1190,9 +1198,12 @@ class OrderListWindow(QtWidgets.QMainWindow):
         
         self.CustomerName.setCurrentIndex(0)
 
+        query.close()
+
     # Updates Order Number dropdown menu with database data
     def updateOrderNumber(self):
         # Grabs all Order Numbers from the database
+        
         query = mydb.cursor()
         query.execute("SELECT OrderNumber FROM JOBORDER")
 
@@ -1205,6 +1216,8 @@ class OrderListWindow(QtWidgets.QMainWindow):
             self.OrderNumber.addItem(str(row[0]))
         
         self.OrderNumber.setCurrentIndex(0)
+
+        query.close()
 
     # Creates a New Order window with the Order List window being the parent and hiding
     def newOrder(self):
@@ -1228,9 +1241,17 @@ class OrderListWindow(QtWidgets.QMainWindow):
             selectedRow = self.table.selectionModel().selectedRows()[0].row() # Processes report for first selection only
             selectedOrder = self.table.item(selectedRow, 0).text() # Grabs OrderNumber from selected row
 
-            self.warningBox = Warning(self, "Are you sure?", "You are about to delete Order {}. Do you want to proceed?")
+            self.warningBox = Warning(self, "Are you sure?", "You are about to delete Order {}. Do you want to proceed?".format(selectedOrder))
 
-            self.report = ViewOrder(self, selectedOrder) # Creates child window for the report
+            query = mydb.cursor()
+            query.execute("DELETE FROM JOBORDER WHERE OrderNumber={}".format(selectedOrder))
+
+            mydb.commit()
+            query.close()
+
+            self.updateTable()
+
+            #self.report = ViewOrder(self, selectedOrder) # Creates child window for the report
 
     # Redudant function for closing the Order List window using the Exit button
     def exitWindow(self):
@@ -1303,6 +1324,8 @@ class OrderListWindow(QtWidgets.QMainWindow):
         # Makes the columns resize automatically to the available space in the window.
         header = self.table.horizontalHeader()    
         header.setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
+        query.close()
 
 #############################################################################################################
 
