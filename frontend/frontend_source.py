@@ -2,6 +2,7 @@
 # Riley Ruckman, 1721498
 # Final Project Submission - frontend
 
+#from _typeshed import NoneType
 from PyQt5 import QtGui
 import sys
 import PyQt5
@@ -121,14 +122,14 @@ class ViewOrder(QtWidgets.QMainWindow):
         query.execute("SELECT CONCAT(Quantity, 'x ', HardwareName) FROM ORDERHARDWARE"
                         + " INNER JOIN JOBORDER ON ORDERHARDWARE.JobNumber = JOBORDER.JobNumber"
                         + " WHERE OrderNumber = {}".format(orderNumber))
-        #query.next()
 
-        self.Hardware = QtWidgets.QLineEdit(query.fetchone()[0])
+        self.Hardware = QtWidgets.QLineEdit('None')
         # If there is no selected Hardware value, 'None' is inserted
-        if self.Hardware.text() == '':
-            self.Hardware.insert('None')
+        hardwareText = query.fetchone()
+        if query.rowcount != 0 and type(hardwareText) == NoneType:
+            self.Hardware.insert(hardwareText[0])
         self.Hardware.setReadOnly(True)
-        #############
+        ############# 
 
         # Labels for self.info subwidgets
         self.OrderNumberLabel = QtWidgets.QLabel('Order Number:')
@@ -830,9 +831,8 @@ class NewOrderWindow(QtWidgets.QMainWindow):
             
             # Query to grab the latest job that was created, which will be the job created with the last query
             jobQuery = mydb.cursor()
-            jobQuery.execute("SELECT TOP 1 JobNumber FROM JOB ORDER BY JobNumber DESC")
-            jobQuery.next()
-            jobNumber = str(jobQuery.value(0))
+            jobQuery.execute("SELECT JobNumber FROM JOB ORDER BY JobNumber DESC LIMIT 1")
+            jobNumber = str(jobQuery.fetchone()[0])
 
             # Converts any empty string or 'None' to NULL, or surrounds string with '' for
             # the INSERT statement
@@ -1044,10 +1044,16 @@ class OrderListWindow(QtWidgets.QMainWindow):
         self.printReportButton.move(138, 0)
         self.printReportButton.clicked.connect(self.viewReport)
 
+        # Button for viewing an existing order
+        self.printReportButton = QtWidgets.QPushButton(self.buttons)
+        self.printReportButton.setText('Delete Order')
+        self.printReportButton.move(266, 0)
+        self.printReportButton.clicked.connect(self.deleteOrder)
+
         # Button for exiting Order List window
         self.exitButton = QtWidgets.QPushButton(self.buttons)
         self.exitButton.setText('Exit')
-        self.exitButton.move(266, 0)
+        self.exitButton.move(394, 0)
         self.exitButton.clicked.connect(self.exitWindow)
 
         ####################################################################################
@@ -1207,6 +1213,16 @@ class OrderListWindow(QtWidgets.QMainWindow):
             selectedOrder = self.table.item(selectedRow, 0).text() # Grabs OrderNumber from selected row
             self.report = ViewOrder(self, selectedOrder) # Creates child window for the report
             self.report.show() # Shows the child report window
+
+    def deleteOrder(self):
+        # Checks if there is a valid selection
+        if len(self.table.selectionModel().selectedRows()) > 0:
+            selectedRow = self.table.selectionModel().selectedRows()[0].row() # Processes report for first selection only
+            selectedOrder = self.table.item(selectedRow, 0).text() # Grabs OrderNumber from selected row
+
+            self.warningBox = Warning(self, "Are you sure?", "You are about to delete Order {}. Do you want to proceed?")
+
+            self.report = ViewOrder(self, selectedOrder) # Creates child window for the report
 
     # Redudant function for closing the Order List window using the Exit button
     def exitWindow(self):
