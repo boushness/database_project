@@ -1098,16 +1098,16 @@ class OrderListWindow(QtWidgets.QMainWindow):
         # A Customer selection will update Contact, reset the Order Number selection
         # and update the table
         self.CustomerName.activated[str].connect(self.updateContact)
-        self.CustomerName.activated[str].connect(self.resetOrderNumber)
+        self.CustomerName.activated[str].connect(self.updateOrderNumber)
         self.CustomerName.activated[str].connect(self.updateTable)
 
         # A Contact selection with reset the Order Number and update the table
-        self.Contact.activated[str].connect(self.resetOrderNumber)
+        self.Contact.activated[str].connect(self.updateOrderNumber)
         self.Contact.activated[str].connect(self.updateTable)
 
-        # A OrderNumber selection will reset Customer, Contact, and update the table
-        self.OrderNumber.activated[str].connect(self.resetCustomer)
-        self.OrderNumber.activated[str].connect(self.resetContact)
+        # A OrderNumber selection will reset Customer, update Contacts, and update the table
+        self.OrderNumber.activated[str].connect(self.updateCustomer)
+        self.OrderNumber.activated[str].connect(self.updateContact)
         self.OrderNumber.activated[str].connect(self.updateTable)
 
         # Sets title of window and minimum size of window to allow
@@ -1115,6 +1115,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("Order List")
         self.setMinimumSize(1100, 520)
     
+    """
     # Resets Customer dropdown menu selection to '*'
     def resetCustomer(self):
         self.CustomerName.setCurrentIndex(0)
@@ -1126,6 +1127,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
     # Resets Order Number dropdown menu selection to '*'
     def resetOrderNumber(self):
         self.OrderNumber.setCurrentIndex(0)
+    """
 
     # Updates the Contact dropdown menu options based on a selection of Customer
     # When a specific Customer is selected, only Contacts associated with that Customer
@@ -1162,6 +1164,8 @@ class OrderListWindow(QtWidgets.QMainWindow):
         for row in query:
             self.Contact.addItem(row[0])
             self.ContactID.append(row[1])
+        
+        self.Contact.setCurrentIndex(0)
 
     # Updates Customer dropdown menu with database data
     def updateCustomer(self):
@@ -1183,6 +1187,8 @@ class OrderListWindow(QtWidgets.QMainWindow):
         for row in query:
             self.CustomerName.addItem(row[0])
             self.CustomerID.append(row[1])
+        
+        self.CustomerName.setCurrentIndex(0)
 
     # Updates Order Number dropdown menu with database data
     def updateOrderNumber(self):
@@ -1197,6 +1203,8 @@ class OrderListWindow(QtWidgets.QMainWindow):
         self.OrderNumber.addItem("*")
         for row in query:
             self.OrderNumber.addItem(str(row[0]))
+        
+        self.OrderNumber.setCurrentIndex(0)
 
     # Creates a New Order window with the Order List window being the parent and hiding
     def newOrder(self):
@@ -1243,7 +1251,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
             contactID = self.ContactID[self.Contact.currentIndex() - 1]
         if len(self.OrderNumber) > 1: 
             orderNumber = self.OrderNumber.currentIndex()
-        print([customerID, contactID, orderNumber])
+        #print([customerID, contactID, orderNumber])
 
         # Formats values to a boolean check for a query, or to a check that grabs everything.
         # Index 0 is '*', which is designed to grab all non-null values.
@@ -1330,8 +1338,8 @@ def createConnection():
 
     mydb = mysql.connector.connect(
         host="localhost",
-        user="root",
-        password="mysqlPassword_123",
+        user="riley",
+        password="password",
         database="ruckmans"
     )
 
