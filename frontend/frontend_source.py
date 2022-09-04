@@ -3,6 +3,7 @@
 # Final Project Submission - frontend
 
 #from _typeshed import NoneType
+import configparser
 from PyQt5 import QtGui
 import sys
 import PyQt5
@@ -824,7 +825,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
 
             query = mydb.cursor()
             query.execute(insertQueryStatement)
-            print(insertQueryStatement)
+            #print(insertQueryStatement)
             
             # Query to grab the latest job that was created, which will be the job created with the last query
             jobQuery = mydb.cursor()
@@ -862,7 +863,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
                              )
              
             query.execute(insertQueryStatement)
-            print(insertQueryStatement)
+            #print(insertQueryStatement)
 
             # Summing variable to determine Hardware Quantity
             hardwareNum = 0
@@ -931,7 +932,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
                                 )
                      
                     query.execute(insertQueryStatement)
-                    print(insertQueryStatement)
+                    #print(insertQueryStatement)
 
                     # Door Quantity is summed into hardwareNum
                     hardwareNum += int(self.table.cellWidget(i, 0).text())
@@ -941,7 +942,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
                 insertQueryStatement = ("INSERT INTO ORDERHARDWARE VALUES({}, '{}', {})".format(jobNumber, self.Hardware.currentText(), hardwareNum))
                  
                 query.execute(insertQueryStatement)
-                print(insertQueryStatement)
+                #print(insertQueryStatement)
             
             # Commit data to database
             mydb.commit()
@@ -1284,7 +1285,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
             contactID = self.ContactID[self.Contact.currentIndex() - 1]
         if len(self.OrderNumber) > 1: 
             orderNumber = self.OrderNumber.currentText()
-        print([customerID, contactID, orderNumber])
+        #print([customerID, contactID, orderNumber])
 
         # Formats values to a boolean check for a query, or to a check that grabs everything.
         # Index 0 is '*', which is designed to grab all non-null values.
@@ -1343,6 +1344,8 @@ class OrderListWindow(QtWidgets.QMainWindow):
 
 # Creates and verifies connection with database
 def createConnection():
+
+    # Uses PyQt SQL database connection library
     """
     # Adds database connection protocol to available options
     con = QSqlDatabase.addDatabase("QMYSQL")
@@ -1369,13 +1372,17 @@ def createConnection():
     
     """
 
+    # Uses MySQL Python connector
+    config = configparser.ConfigParser()
+    config.read("dbcon.cfg")
+
     global mydb
 
     mydb = mysql.connector.connect(
-        host="localhost",
-        user="riley",
-        password="password",
-        database="ruckmans"
+        host = config["DEFAULT"]["host"],
+        user = "riley",
+        password = "password",
+        database = config["DEFAULT"]["database"]
     )
 
     """
@@ -1406,5 +1413,7 @@ def main():
     sys.exit(app.exec_())
 
 ###############################################################################
-main()
+
+if __name__ == "__main__":
+    main()
 
