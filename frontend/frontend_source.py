@@ -4,20 +4,12 @@
 
 #from _typeshed import NoneType
 import configparser
-from PyQt5 import QtGui
 import sys
-import PyQt5
-from PyQt5 import QtWidgets
-from PyQt5 import QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import (
-    QApplication,
-    QMessageBox,
-    QTableWidgetItem,
-)
+from PyQt5.QtWidgets import QApplication
 import mysql.connector
 
+from OrderListWindow import OrderListWindow
+'''
 # Order Report window Class for viewing Order information from the database.
 # Will include CUSTOMER, CONTACT, JOB, JOBORDER, HARDWARE, FINISH, DOOR, etc.
 # information from the database for a specific OrderNumber
@@ -89,7 +81,7 @@ class ViewOrder(QtWidgets.QMainWindow):
 
         # Formatting for date type variable
         self.JobDate = QtWidgets.QLineEdit(query.fetchone()[0].strftime("%m/%d/%Y"))
-        '''.toString("MM/dd/yy")'''
+        #.toString("MM/dd/yy")
         self.JobDate.setReadOnly(True)
         #############
          
@@ -292,7 +284,6 @@ class ViewOrder(QtWidgets.QMainWindow):
     def exitOrder(self):
         self.close()
         self.parent().show()
-
 ###############################################################################
 
 # New Order Form window Class for creating new JOBORDER entries.
@@ -981,7 +972,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
 
 #############################################################################################################
 
-# Order List window Class for viewing JOBORDER entries in the database.
+# Order List Window Class for viewing JOBORDER entries in the database.
 # Allows searching of JOBORDER by Customer, Contact, and/or Order Number
 # Allows entry of new JOBORDERs and report views of JOBORDER entries
 class OrderListWindow(QtWidgets.QMainWindow):
@@ -1233,7 +1224,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
             self.hide() # Hides Order list window
             selectedRow = self.table.selectionModel().selectedRows()[0].row() # Processes report for first selection only
             selectedOrder = self.table.item(selectedRow, 0).text() # Grabs OrderNumber from selected row
-            self.report = ViewOrder(self, selectedOrder) # Creates child window for the report
+            self.report = ViewOrder(self, selectedOrder, mydb) # Creates child window for the report
             self.report.show() # Shows the child report window
 
     def deleteOrder(self):
@@ -1341,7 +1332,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
         query.close()
 
 #############################################################################################################
-
+'''
 # Creates and verifies connection with database
 def createConnection():
 
@@ -1381,7 +1372,7 @@ def createConnection():
     mydb = mysql.connector.connect(
         host = config["DEFAULT"]["host"],
         user = "riley",
-        password = "password",
+        password = "MYsql123!",
         database = config["DEFAULT"]["database"]
     )
 
@@ -1398,15 +1389,15 @@ def createConnection():
 # Makes connection to database and open an Order List window
 def main():
 
-    # Creates base application for PyQT
-    app = QApplication(sys.argv)
-
     # The program is exited out of if the database connection is invalid
     if not createConnection():
         sys.exit(1)
 
+    # Creates base application for PyQT
+    app = QApplication(sys.argv)
+
     # Open and show OrderListWindow()
-    mainWindow = OrderListWindow()
+    mainWindow = OrderListWindow(mydb)
     mainWindow.show()
 
     # Exits program and shuts down base application for PyQT

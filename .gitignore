@@ -1,1 +1,5 @@
 .vscode/settings.json
+dbcon.cfg
+frontend/__pycache__/NewOrderWindow.cpython-310.pyc
+frontend/__pycache__/OrderListWindow.cpython-310.pyc
+frontend/__pycache__/ViewOrder.cpython-310.pyc
