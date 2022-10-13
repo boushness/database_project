@@ -1,52 +1,33 @@
-# TCSS445, Spring 2021
-# Riley Ruckman, 1721498
-# Final Project Submission - frontend
-
-#from _typeshed import NoneType
-import configparser
-import sys
+import sys, os
 from PyQt5.QtWidgets import QApplication
-import mysql.connector
+from PyQt5 import QtWidgets
+from PyQt5 import QtCore
 
-from MainMenuWindow import MainMenuWindow
+from menus.MainMenuWindow import MainMenuWindow
+from menus.SignIn import SignIn
 
-# Creates and verifies connection with database
-def createConnection():
-
-    # Uses MySQL Python connector
-    config = configparser.ConfigParser()
-    config.read("dbcon.cfg")
-
-    try: 
-        mydb = mysql.connector.connect(
-            host = config["DEFAULT"]["host"],
-            user = "riley",
-            password = "MYsql123!",
-            database = config["DEFAULT"]["database"]
-        )
-    except:
-        sys.exit("Database Connection Failed")
-    
-    return mydb
-
-# Makes connection to database and open an Order List window
+# Launches GUI engine, asks for login credentials, and starts main menu
 def main():
-
-    # The program is exited out of if the database connection is invalid
 
     # Creates base application for PyQT
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
-    # Open and show main menu
-    mainWindow = MainMenuWindow(createConnection())
-    #QObject.connect(mainWindow)
+    signin = SignIn()
+    signin.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+    if signin.exec() == QtWidgets.QDialog.Accepted:
+        #print([signin.name, signin.password])
 
-    # Exits program and shuts down base application for PyQT
-    sys.exit(app.exec())
+        # Open and show main menu
+        mainWindow = MainMenuWindow(signin.connection)
+        
+        # Exits program and shuts down base application for PyQT
+        sys.exit(app.exec_())
+    else:
+        sys.exit()
 
-###############################################################################
 
 if __name__ == "__main__":
+    #print(os.listdir())
     main()
 

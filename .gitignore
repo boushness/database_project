@@ -7,3 +7,9 @@ dbconconfig.py
 logo.png
 frontend/__pycache__/MainMenuWindow.cpython-310.pyc
 frontend/__pycache__/OrderWindow.cpython-310.pyc
+frontend/menus/__pycache__/__init__.cpython-310.pyc
+frontend/menus/__pycache__/MainMenuWindow.cpython-310.pyc
+frontend/menus/__pycache__/OrderListWindow.cpython-310.pyc
+frontend/menus/__pycache__/OrderWindow.cpython-310.pyc
+frontend/menus/__pycache__/SignIn.cpython-310.pyc
+frontend/menus/__pycache__/ViewOrder.cpython-310.pyc

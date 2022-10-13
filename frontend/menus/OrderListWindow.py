@@ -7,8 +7,8 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem,
 )
 
-from ViewOrder import ViewOrder
-from OrderWindow import OrderWindow
+from menus.ViewOrder import ViewOrder
+from menus.OrderWindow import OrderWindow
 
 # Order List Window Class for viewing JOBORDER entries in the database.
 # Allows searching of JOBORDER by Customer, Contact, and/or Order Number

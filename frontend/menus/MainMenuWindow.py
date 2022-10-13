@@ -3,8 +3,8 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-from OrderListWindow import OrderListWindow
-
+from menus.OrderListWindow import OrderListWindow
+#from OrderListWindow import OrderListWindow
 
 # Main Menu for application
 class MainMenuWindow(QtWidgets.QMainWindow):
@@ -19,26 +19,26 @@ class MainMenuWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(central_widget)
 
         # Creates widget for buttons and sets functions and positions of buttons
-        self.buttons = QtWidgets.QWidget()
+        buttons = QtWidgets.QWidget()
 
-        self.orderListButton = QtWidgets.QPushButton(self.buttons)
-        self.orderListButton.setText("View/Edit Orders")
-        self.orderListButton.move(0, 0)
-        self.orderListButton.clicked.connect(self.DisplayOrderList)
+        orderListButton = QtWidgets.QPushButton(buttons)
+        orderListButton.setText("View/Edit Orders")
+        orderListButton.move(0, 0)
+        orderListButton.clicked.connect(self.DisplayOrderList)
 
-        self.exitButton = QtWidgets.QPushButton(self.buttons)
-        self.exitButton.setText("Exit")
-        self.exitButton.move(0, 30)
-        self.exitButton.clicked.connect(self.ExitMenu)
+        exitButton = QtWidgets.QPushButton(buttons)
+        exitButton.setText("Exit")
+        exitButton.move(0, 30)
+        exitButton.clicked.connect(self.ExitMenu)
 
         # Company logo widget
-        self.label = QtWidgets.QLabel()
-        self.label.setPixmap(QtGui.QPixmap('logo.png').scaledToWidth(200))
+        label = QtWidgets.QLabel()
+        label.setPixmap(QtGui.QPixmap('logo.png').scaledToWidth(200))
 
         # Adds logo and button widgets to central widget
         lay = QtWidgets.QGridLayout(central_widget)
-        lay.addWidget(self.label, 0, 0)
-        lay.addWidget(self.buttons, 1, 0)
+        lay.addWidget(label, 0, 0)
+        lay.addWidget(buttons, 1, 0)
 
         lay.setRowStretch(0, 0)
         lay.setRowStretch(1, 1)
@@ -50,8 +50,8 @@ class MainMenuWindow(QtWidgets.QMainWindow):
     # Hides main menu and displays list of orders
     def DisplayOrderList(self):
         self.hide()
-        self.orderList = OrderListWindow(self)
-        self.orderList.show()
+        orderList = OrderListWindow(self)
+        orderList.show()
 
     # Closes menu
     def ExitMenu(self):
