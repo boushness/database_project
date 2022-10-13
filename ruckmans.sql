@@ -1,6 +1,6 @@
---  TCSS445, Spring 2021
---  Riley Ruckman, 1721498
---  Final Project Submission - backend
+-- TCSS445, Spring 2021
+-- Riley Ruckman, 1721498
+-- Final Project Submission - backend
 
 USE mysql;
 DROP DATABASE ruckmans;
@@ -9,7 +9,7 @@ CREATE DATABASE ruckmans;
 
 USE ruckmans;
 -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
---  Run each function individually after creating and using TCSS445_Project database
+-- Run each function individually after creating and using TCSS445_Project database
 
 DELIMITER |
 CREATE FUNCTION IsCompanyCheck ( ID int )
@@ -223,7 +223,7 @@ CREATE TABLE JOB
 
 CREATE TABLE JOBORDER
 (
-	OrderNumber int NOT NULL AUTO_INCREMENT,
+	-- OrderNumber int NOT NULL AUTO_INCREMENT,
 	JobNumber int NOT NULL references Job(JobNumber),
 	ProductionComments VARCHAR(100),
 	InvoiceComments VARCHAR(100),
@@ -231,22 +231,22 @@ CREATE TABLE JOBORDER
 	DeliveryMethod VARCHAR(10) references PRODUCTDELIVERYMETHOD(DeliveryMethodName),
 	OrderStatus VARCHAR(50) NOT NULL
 		CHECK (OrderStatus in ('Processing', 'In Production','Completed')),
-	PRIMARY KEY(OrderNumber),
-	UNIQUE (JobNumber)
+
+	PRIMARY KEY(JobNumber)
 );
 
 /*
--- DROP TABLE JOBQUOTE
--- GO
+--DROP TABLE JOBQUOTE
+--GO
 */
 
 CREATE TABLE JOBQUOTE
 (
-	QuoteNumber int NOT NULL AUTO_INCREMENT,
+	-- QuoteNumber int NOT NULL AUTO_INCREMENT,
 	JobNumber int NOT NULL references Job(JobNumber),
 	QuoteComments VARCHAR(100),
-	PRIMARY KEY(QuoteNumber),
-	UNIQUE(JobNumber)
+
+	PRIMARY KEY(JobNumber)
 );
 
 /*

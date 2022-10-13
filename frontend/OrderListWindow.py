@@ -1,5 +1,6 @@
 import PyQt5
 from PyQt5 import QtWidgets
+from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import (
@@ -7,25 +8,30 @@ from PyQt5.QtWidgets import (
 )
 
 from ViewOrder import ViewOrder
-from NewOrderWindow import NewOrderWindow
+from OrderWindow import OrderWindow
 
 # Order List Window Class for viewing JOBORDER entries in the database.
 # Allows searching of JOBORDER by Customer, Contact, and/or Order Number
 # Allows entry of new JOBORDERs and report views of JOBORDER entries
 class OrderListWindow(QtWidgets.QMainWindow):
-    def __init__(self, mydb, parent=None):
+    def __init__(self, parent):
         
-        self.mydb = mydb
         # Uses QtWidgets.QMainWindow's __init__()
-        super(OrderListWindow, self).__init__(parent)
+        super().__init__(parent)
+
+        self.mydb = parent.mydb
+
+        # Set to be deleted by garbage collection
+        # when closed
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
         # Creates central widget that all other widgets will attach to.
         central_widget = QtWidgets.QWidget()
         self.setCentralWidget(central_widget)
 
         # Arrays for storing CustomerID and ContactID values.
-        # Customer in index 0 of the Customer dropbox menu
-        # will have its CustomerID stored in index 0 of the CustomerID array.
+        # Customer in index x of the Customer dropbox menu
+        # will have its CustomerID stored in index x of the CustomerID array.
         # This is true for ContactID as well.
         self.CustomerID = []
         self.ContactID = []
@@ -41,7 +47,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
         # Dropdown menu widgets for Customer, Contact, and Order Number
         self.CustomerName = QtWidgets.QComboBox()
         self.Contact = QtWidgets.QComboBox()
-        self.OrderNumber = QtWidgets.QComboBox()
+        self.JobNumber = QtWidgets.QComboBox()
 
         # Label widgets for Customer, Contact, and Order Number
         self.CustomerNamelabel = QtWidgets.QLabel('Customer')
@@ -51,7 +57,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
         # Adds widgets to self.selection grid layout
         lay.addWidget(self.CustomerName, 1, 0)
         lay.addWidget(self.Contact, 1, 1)
-        lay.addWidget(self.OrderNumber, 1, 2)
+        lay.addWidget(self.JobNumber, 1, 2)
         lay.addWidget(self.CustomerNamelabel, 0, 0)
         lay.addWidget(self.ContactLabel, 0, 1)
         lay.addWidget(self.OrderNumberLabel, 0, 2)
@@ -124,7 +130,7 @@ class OrderListWindow(QtWidgets.QMainWindow):
         # Allows dropdown menus to have line fields that the user can enter text into
         self.CustomerName.setEditable(True)
         self.Contact.setEditable(True)
-        self.OrderNumber.setEditable(True)
+        self.JobNumber.setEditable(True)
 
         # Sets signal connections for when the user interacts with the 
         # dropdown menus.
@@ -139,10 +145,10 @@ class OrderListWindow(QtWidgets.QMainWindow):
         self.Contact.activated[str].connect(self.updateOrderNumber)
         self.Contact.activated[str].connect(self.updateTable)
 
-        # A OrderNumber selection will reset Customer, update Contacts, and update the table
-        self.OrderNumber.activated[str].connect(self.updateCustomer)
-        self.OrderNumber.activated[str].connect(self.updateContact)
-        self.OrderNumber.activated[str].connect(self.updateTable)
+        # A JobNumber selection will reset Customer, update Contacts, and update the table
+        self.JobNumber.activated[str].connect(self.updateCustomer)
+        self.JobNumber.activated[str].connect(self.updateContact)
+        self.JobNumber.activated[str].connect(self.updateTable)
 
         # Sets title of window and minimum size of window to allow
         # all information to be comfortably shown 
@@ -160,8 +166,16 @@ class OrderListWindow(QtWidgets.QMainWindow):
 
     # Resets Order Number dropdown menu selection to '*'
     def resetOrderNumber(self):
-        self.OrderNumber.setCurrentIndex(0)
+        self.JobNumber.setCurrentIndex(0)
     """
+
+    # Updates all elements of OrderListWindow
+    def update(self):
+        self.updateContact()
+        self.updateCustomer()
+        self.updateOrderNumber()
+        self.updateTable()
+
 
     # Updates the Contact dropdown menu options based on a selection of Customer
     # When a specific Customer is selected, only Contacts associated with that Customer
@@ -206,10 +220,10 @@ class OrderListWindow(QtWidgets.QMainWindow):
 
     # Updates Customer dropdown menu with database data
     def updateCustomer(self):
+
         # Query for grabbing CustomerName from the database
         # Only grabs Customers who have an existing JOBORDER entry in the
         # database.
-        
         query = self.mydb.cursor()
         query.execute("SELECT DISTINCT CustomerName, CUSTOMER.CustomerID FROM CUSTOMER"
                         + " INNER JOIN CUSTOMERCONTACTS ON CUSTOMER.CustomerID = CUSTOMERCONTACTS.CustomerID"
@@ -235,24 +249,24 @@ class OrderListWindow(QtWidgets.QMainWindow):
         # Grabs all Order Numbers from the database
         
         query = self.mydb.cursor()
-        query.execute("SELECT OrderNumber FROM JOBORDER")
+        query.execute("SELECT JobNumber FROM JOBORDER")
 
         # Order Number menu is cleared
-        self.OrderNumber.clear()
+        self.JobNumber.clear()
 
         # Adds '*' selection first, and then adds query results to Customer
-        self.OrderNumber.addItem("*")
+        self.JobNumber.addItem("*")
         for row in query:
-            self.OrderNumber.addItem(str(row[0]))
+            self.JobNumber.addItem(str(row[0]))
         
-        self.OrderNumber.setCurrentIndex(0)
+        self.JobNumber.setCurrentIndex(0)
 
         query.close()
 
     # Creates a New Order window with the Order List window being the parent and hiding
     def newOrder(self):
         self.hide()
-        self.order = NewOrderWindow(self)
+        self.order = OrderWindow(self)
         self.order.show()
 
     # Processes selected row in the Order List window and open a report window for the row
@@ -261,60 +275,66 @@ class OrderListWindow(QtWidgets.QMainWindow):
         if len(self.table.selectionModel().selectedRows()) > 0:
             self.hide() # Hides Order list window
             selectedRow = self.table.selectionModel().selectedRows()[0].row() # Processes report for first selection only
-            selectedOrder = self.table.item(selectedRow, 0).text() # Grabs OrderNumber from selected row
-            self.report = ViewOrder(self, selectedOrder) # Creates child window for the report
-            self.report.show() # Shows the child report window
+            selectedOrder = self.table.item(selectedRow, 0).text() # Grabs JobNumber from selected row
+            report = ViewOrder(self, selectedOrder) # Creates child window for the report
+            report.show() # Shows the child report window
 
     def deleteOrder(self):
         # Checks if there is a valid selection
         if len(self.table.selectionModel().selectedRows()) > 0:
             selectedRow = self.table.selectionModel().selectedRows()[0].row() # Processes report for first selection only
-            selectedOrder = self.table.item(selectedRow, 0).text() # Grabs OrderNumber from selected row
+            selectedOrder = self.table.item(selectedRow, 0).text() # Grabs JobNumber from selected row
 
-            self.warningBox = Warning(self, "Are you sure?", "You are about to delete Order {}. Do you want to proceed?".format(selectedOrder))
+            warningBox = QtWidgets.QMessageBox()
 
-            # Grabs JobNumber that the selected OrderNumber is connected to
-            query = self.mydb.cursor()
-            query.execute("SELECT JobNumber FROM JOBORDER WHERE OrderNumber={}".format(selectedOrder))
-            jobNumber = query.fetchone()[0]
+            warningBox.setWindowTitle("Are you sure?")
+            warningBox.setText("You are about to delete Order {}.".format(selectedOrder)
+                + "\nDo you want to proceed?")
+            warningBox.setIcon(QtWidgets.QMessageBox.Warning)
+            warningBox.setStandardButtons(QtWidgets.QMessageBox.Yes |
+                QtWidgets.QMessageBox.No)
+
+            choice = warningBox.exec()
             
-            # Deletes all entries associated with the JobNumber/OrderNumber
-            query.execute("DELETE FROM JOB WHERE JobNumber={}".format(jobNumber))
-            query.execute("DELETE FROM JOBORDER WHERE JobNumber={}".format(jobNumber))
-            query.execute("DELETE FROM ORDERHARDWARE WHERE JobNumber={}".format(jobNumber))
-            query.execute("DELETE FROM DOOR WHERE JobNumber={}".format(jobNumber))
+            if choice == QtWidgets.QMessageBox.Yes:
+                # Grabs JobNumber that the selected JobNumber is connected to
+                query = self.mydb.cursor()
+                query.execute("SELECT JobNumber FROM JOBORDER WHERE JobNumber={}".format(selectedOrder))
+                jobNumber = query.fetchone()[0]
+                
+                # Deletes all entries associated with the JobNumber/JobNumber
+                query.execute("DELETE FROM JOB WHERE JobNumber={}".format(jobNumber))
+                query.execute("DELETE FROM JOBORDER WHERE JobNumber={}".format(jobNumber))
+                query.execute("DELETE FROM ORDERHARDWARE WHERE JobNumber={}".format(jobNumber))
+                query.execute("DELETE FROM DOOR WHERE JobNumber={}".format(jobNumber))
 
-            # Commit changes to database, close cursor, and update table and dropdowns
-            self.mydb.commit()
-            query.close()
+                # Commit changes to database, close cursor, and update table and dropdowns
+                self.mydb.commit()
+                query.close()
 
-            self.updateContact()
-            self.updateCustomer()
-            self.updateOrderNumber()
-            self.updateTable()
-
-            #self.report = ViewOrder(self, selectedOrder) # Creates child window for the report
+                self.update()
 
     # Redudant function for closing the Order List window using the Exit button
     def exitWindow(self):
         self.close()
+        self.parent().show()
     
     # Function called whenever a change to the table in the Order List window has occurred.
-    # This is called whenever the current values for the Customer, Contact, and/or OrderNumber dropdown menus change.
+    # This is called whenever the current values for the Customer, Contact, and/or JobNumber dropdown menus change.
     def updateTable(self):
         
-        # Grabs new values for customerID, ContactID, and OrderNumber from 
-        # self.CustomerID, self.ContactID, and the OrderNumber dropdown box
+        # Grabs new values for customerID, ContactID, and JobNumber from 
+        # self.CustomerID, self.ContactID, and the JobNumber dropdown box
         # customerID and contactID must be adjusted by -1 to account for "*"
         # being in index 0
-        customerID, contactID, orderNumber = 0, 0, 0
+        customerID, contactID, JobNumber = 0, 0, 0
         if len(self.CustomerID) > 1: 
             customerID = self.CustomerID[self.CustomerName.currentIndex() - 1]
         if len(self.ContactID) > 1: 
             contactID = self.ContactID[self.Contact.currentIndex() - 1]
-        if len(self.OrderNumber) > 1: 
-            orderNumber = self.OrderNumber.currentText()
-        #print([customerID, contactID, orderNumber])
+        if len(self.JobNumber) > 1: 
+            JobNumber = self.JobNumber.currentText()
+        #print([customerID, contactID, JobNumber])
 
         # Formats values to a boolean check for a query, or to a check that grabs everything.
         # Index 0 is '*', which is designed to grab all non-null values.
@@ -329,21 +349,21 @@ class OrderListWindow(QtWidgets.QMainWindow):
         else:
             contactIDQuery = 'CUSTOMERCONTACTS.ContactID = {}'.format(contactID)
         
-        if self.OrderNumber.currentIndex() == 0:
-            orderNumberQuery = 'OrderNumber IS NOT NULL'
+        if self.JobNumber.currentIndex() == 0:
+            orderNumberQuery = 'JOBORDER.JobNumber IS NOT NULL'
         else:
-            orderNumberQuery = 'OrderNumber = {}'.format(orderNumber)
+            orderNumberQuery = 'JOBORDER.JobNumber = {}'.format(JobNumber)
 
         # Query to grab the desired information from the database
         query = self.mydb.cursor()
-        query.execute("SELECT OrderNumber, CustomerName, CONCAT(FirstName, ' ', LastName) AS ContactName, JobName, PONumber, JobDate, EstimatedDueDate, OrderStatus" + 
-                                " FROM JOB" + 
-                                " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber" +
+        query.execute("SELECT JOBORDER.JobNumber, CustomerName, CONCAT(FirstName, ' ', LastName) AS ContactName, JobName, PONumber, JobDate, EstimatedDueDate, OrderStatus" + 
+                                " FROM JOBORDER" + 
+                                " INNER JOIN JOB ON JOBORDER.JobNumber = JOB.JobNumber" +
                                 " INNER JOIN CUSTOMERCONTACTS ON JOB.MainContact = CUSTOMERCONTACTS.ContactID AND JOB.CustomerID = CUSTOMERCONTACTS.CustomerID" + 
                                 " INNER JOIN CUSTOMER ON CUSTOMER.CustomerID = CUSTOMERCONTACTS.CustomerID" + 
                                 " INNER JOIN CONTACT ON CONTACT.ContactID = CUSTOMERCONTACTS.ContactID" + 
-                                " WHERE {} AND {} AND {}".format(customerIDQuery, contactIDQuery, orderNumberQuery) +
-                                " ORDER BY OrderNumber DESC"
+                                " WHERE {} AND {} AND {} AND JOB.JobType = 'O'".format(customerIDQuery, contactIDQuery, orderNumberQuery) +
+                                " ORDER BY JOBORDER.JobNumber DESC"
                                 )
         
         self.table.setRowCount(0) # Resets the Order List window's table by setting its rowCount to 0

@@ -8,12 +8,12 @@ from PyQt5.QtGui import *
 # Allows selection of Customer, Contact, Finish, Hardware, etc.
 # Allows modular DOOR entries
 # Option for cancelling Order Form or inserting Order Form to database
-class NewOrderWindow(QtWidgets.QMainWindow):
+class OrderWindow(QtWidgets.QMainWindow):
     def __init__(self, parent):
         
         self.mydb = parent.mydb
         # Uses QtWidgets.QMainWindow's __init__()
-        super(NewOrderWindow, self).__init__(parent)
+        super().__init__(parent)
 
         # Set to be deleted by garbage collection
         # when closed
@@ -102,12 +102,12 @@ class NewOrderWindow(QtWidgets.QMainWindow):
         # using the latest JOBORDER entry. The text line cannot be edited, but can be highlighted
         # for copy/paste purposes
         query = self.mydb.cursor()
-        query.execute("SELECT OrderNumber FROM JOBORDER ORDER BY OrderNumber DESC LIMIT 1")
+
+        query.execute("SELECT JobNumber FROM JOB ORDER BY JobNumber DESC LIMIT 1")
         self.OrderNumber.setText(str(query.fetchone()[0] + 1))
         self.OrderNumber.setReadOnly(True)
         
         # Customer menu and CustomerID array is loaded with CustomerName and CustomerID from the database, respectively
-         
         query.execute("SELECT CustomerName, CustomerID FROM CUSTOMER")
         for row in query:
             self.CustomerName.addItem("{}".format(row[0]))
@@ -292,6 +292,8 @@ class NewOrderWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("New Order Form")
         self.setMinimumSize(1800, 1000)
 
+        query.close()
+
     # Verifies QLineEdit text for Door Width and Door Height columns
     def verifyDimensionInput(self):
         # Grabs QLineEdit cell that called for validation
@@ -471,11 +473,7 @@ class NewOrderWindow(QtWidgets.QMainWindow):
 
         # Updates Order List's Customer, Contact, and Order Number dropdown menus and table 
         # with current database data
-        self.parent().updateCustomer()
-        self.parent().updateContact()
-        self.parent().updateOrderNumber()
-        self.parent().updateTable()
-
+        self.parent().update()
         self.parent().show()
     
     # Will transform New Order entries into a series of INSERT statements to enter the 

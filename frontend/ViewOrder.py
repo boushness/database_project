@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 
 # Order Report window Class for viewing Order information from the database.
 # Will include CUSTOMER, CONTACT, JOB, JOBORDER, HARDWARE, FINISH, DOOR, etc.
-# information from the database for a specific OrderNumber
+# information from the database for a specific JobNumber
 class ViewOrder(QtWidgets.QMainWindow):
     def __init__(self, parent, orderNumber):
 
@@ -33,16 +33,16 @@ class ViewOrder(QtWidgets.QMainWindow):
 
         # Initializes all subwidgets of self.info.
         # Most values are grabbed from respective queries where
-        # the OrderNumber can be specified with the passed value
+        # the JobNumber can be specified with the passed value
         # All text lines/boxes are made read-only
-        self.OrderNumber = QtWidgets.QLineEdit(str(orderNumber))
-        self.OrderNumber.setReadOnly(True)
+        self.JobNumber = QtWidgets.QLineEdit(str(orderNumber))
+        self.JobNumber.setReadOnly(True)
         #############
         query = self.mydb.cursor()
         query.execute('SELECT DISTINCT CustomerName FROM CUSTOMER'
                         + ' INNER JOIN JOB ON JOB.CustomerID = CUSTOMER.CustomerID'
                         + ' INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber'
-                        + ' WHERE OrderNumber = {}'.format(orderNumber))
+                        + ' WHERE JOBORDER.JobNumber = {}'.format(orderNumber))
 
         self.CustomerName = QtWidgets.QLineEdit(query.fetchone()[0])
         self.CustomerName.setReadOnly(True)
@@ -51,7 +51,7 @@ class ViewOrder(QtWidgets.QMainWindow):
         query.execute("SELECT DISTINCT CONCAT(FirstName, ' ', LastName) FROM CONTACT"
                         + " INNER JOIN JOB ON JOB.MainContact = CONTACT.ContactID"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
-                        + " WHERE OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
 
         self.Contact = QtWidgets.QLineEdit(query.fetchone()[0])
         self.Contact.setReadOnly(True)
@@ -59,7 +59,7 @@ class ViewOrder(QtWidgets.QMainWindow):
         
         query.execute("SELECT JobName FROM JOB"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
-                        + " WHERE OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
 
         self.JobName = QtWidgets.QLineEdit(query.fetchone()[0])
         self.JobName.setReadOnly(True)
@@ -67,7 +67,7 @@ class ViewOrder(QtWidgets.QMainWindow):
          
         query.execute("SELECT PONumber FROM JOB"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
-                        + " WHERE OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
 
         self.PO = QtWidgets.QLineEdit(query.fetchone()[0])
         self.PO.setReadOnly(True)
@@ -75,7 +75,7 @@ class ViewOrder(QtWidgets.QMainWindow):
          
         query.execute("SELECT JobDate FROM JOB"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
-                        + " WHERE OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
 
         # Formatting for date type variable
         self.JobDate = QtWidgets.QLineEdit(query.fetchone()[0].strftime("%m/%d/%Y"))
@@ -85,7 +85,7 @@ class ViewOrder(QtWidgets.QMainWindow):
          
         query.execute("SELECT EstimatedDueDate FROM JOB"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
-                        + " WHERE OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
 
         # Formatting for date type variable
         self.EstimatedDueDate = QtWidgets.QLineEdit(query.fetchone()[0].strftime("%m/%d/%Y"))
@@ -94,7 +94,7 @@ class ViewOrder(QtWidgets.QMainWindow):
          
         query.execute("SELECT AppliedFinish FROM JOB"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
-                        + " WHERE OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
 
         self.Finish = QtWidgets.QLineEdit(query.fetchone()[0]) 
         # If there is no selected Finish value, 'None' is inserted
@@ -105,7 +105,7 @@ class ViewOrder(QtWidgets.QMainWindow):
          
         query.execute("SELECT CONCAT(Quantity, 'x ', HardwareName) FROM ORDERHARDWARE"
                         + " INNER JOIN JOBORDER ON ORDERHARDWARE.JobNumber = JOBORDER.JobNumber"
-                        + " WHERE OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
 
         self.Hardware = QtWidgets.QLineEdit('None')
         # If there is no selected Hardware value, 'None' is inserted
@@ -130,7 +130,7 @@ class ViewOrder(QtWidgets.QMainWindow):
         lay = QtWidgets.QGridLayout(self.info)
 
         lay.addWidget(self.OrderNumberLabel, 0, 0, 1, 1)
-        lay.addWidget(self.OrderNumber, 1, 0, 1, 1)
+        lay.addWidget(self.JobNumber, 1, 0, 1, 1)
 
         lay.addWidget(self.CustomerNameLabel, 2, 0, 1, 1)
         lay.addWidget(self.CustomerName, 3, 0, 1, 1)
@@ -160,7 +160,7 @@ class ViewOrder(QtWidgets.QMainWindow):
                         + " Thickness, StyleCode, InsideProfile, PanelProfile, OutsideProfile, Bore, DoorComment"
                         + " FROM DOOR"
                         + " INNER JOIN JOBORDER ON DOOR.JobNumber = JOBORDER.JobNumber"
-                        + " WHERE JOBORDER.OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
 
         # self.table has its rows removed, gains columns equal to the number of columns in the query,
         # and gets custom column labels
@@ -191,7 +191,7 @@ class ViewOrder(QtWidgets.QMainWindow):
         # Query to grab DeliveryMethod from the Order
          
         query.execute("SELECT DeliveryMethod FROM JOBORDER"
-                        + " WHERE OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
         self.deliveryMethod = QtWidgets.QLineEdit(query.fetchone()[0])
 
         # If the Order has no specified DeliveryMethod, the DefaultDeliveryMethod is grabbed
@@ -201,21 +201,21 @@ class ViewOrder(QtWidgets.QMainWindow):
             query.execute("SELECT DefaultDeliveryMethod FROM CUSTOMER"
                         + " INNER JOIN JOB ON JOB.CustomerID = CUSTOMER.CustomerID"
                         + " INNER JOIN JOBORDER ON JOB.JobNumber = JOBORDER.JobNumber"
-                        + " WHERE OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
             self.deliveryMethod = QtWidgets.QLineEdit(query.fetchone()[0])
         self.deliveryMethod.setReadOnly(True)
         #############
         # Query to grab ShippingInstructions from the Order
          
         query.execute("SELECT ShippingInstructions FROM JOBORDER"
-                        + " WHERE OrderNumber = {}".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {}".format(orderNumber))
         self.shippingInstructions = QtWidgets.QTextEdit(query.fetchone()[0])
         self.shippingInstructions.setReadOnly(True)
         #############
         # Query to grab ProductionComments from the Order
          
         query.execute("SELECT ProductionComments FROM JOBORDER"
-                        + " WHERE OrderNumber = {};".format(orderNumber))
+                        + " WHERE JOBORDER.JobNumber = {};".format(orderNumber))
         self.productionComments = QtWidgets.QTextEdit(query.fetchone()[0])
         self.productionComments.setReadOnly(True)
         #############
